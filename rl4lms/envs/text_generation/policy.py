@@ -535,13 +535,21 @@ class Seq2SeqLMActorCriticPolicy(LMActorCriticPolicy):
         return log_prob, model_kwargs
 
     def get_policy_first_device(self):
-        return self._policy_model.get_encoder().first_device if self._apply_model_parallel else self.device
+        return (
+            self._policy_model.module 
+            if isinstance(self.self._policy_model, torch.nn.DataParallel) 
+            else self._policy_model
+        ).get_encoder().first_device if self._apply_model_parallel else self.device
 
     def get_inputs_for_generation(self, obs: TensorDict):
         return obs["prompt_or_input_encoded_pt"], obs["prompt_or_input_attention_mask_pt"]
 
     def get_config_module(self):
-        return self._policy_model.get_encoder()
+        return (
+            self._policy_model.module 
+            if isinstance(self.self._policy_model, torch.nn.DataParallel) 
+            else self._policy_model
+        ).get_encoder()
 
     def get_policy_type(self):
         return PolicyType.SEQ2SEQ
