@@ -325,11 +325,18 @@ class Seq2SeqLMActorCriticPolicy(LMActorCriticPolicy, ActorCriticWarmStartMixin)
         return ref_policy_output
 
     def get_policy_first_device(self):
-        return (
-            self._policy_model.get_encoder().first_device
-            if self._apply_model_parallel
-            else self.device
-        )
+        encoder = (
+            self._policy_model.module 
+            if isinstance(self._policy_model, torch.nn.DataParallel) 
+            else self._policy_model
+        ).get_encoder()
+        if self._apply_model_parallel:
+            if hasattr(encoder, "first_device"):
+                return encoder.first_device
+            else:
+                return self.device
+        else:
+            return self.device
 
     def get_inputs_for_generation(self, obs: TensorDict) -> GenerationInputs:
 

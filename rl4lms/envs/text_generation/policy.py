@@ -537,7 +537,7 @@ class Seq2SeqLMActorCriticPolicy(LMActorCriticPolicy):
     def get_policy_first_device(self):
         return (
             self._policy_model.module 
-            if isinstance(self.self._policy_model, torch.nn.DataParallel) 
+            if isinstance(self._policy_model, torch.nn.DataParallel) 
             else self._policy_model
         ).get_encoder().first_device if self._apply_model_parallel else self.device
 
